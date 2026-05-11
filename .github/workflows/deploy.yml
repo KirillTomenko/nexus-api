@@ -82,7 +82,7 @@ jobs:
           script: |
             set -e
 
-            IMAGE="ghcr.io/${{ github.repository }}:latest"
+            IMAGE=$(echo "ghcr.io/${{ github.repository }}:latest" | tr '[:upper:]' '[:lower:]')
 
             echo "🔑 Логин в GitHub Container Registry..."
             echo "${{ secrets.GITHUB_TOKEN }}" | \
