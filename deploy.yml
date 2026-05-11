@@ -1,0 +1,108 @@
+name: 🚀 Build & Deploy NexusAPI
+
+# ─── Триггеры ──────────────────────────────────────────────────────────────────
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+# ─── Переменные ────────────────────────────────────────────────────────────────
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}   # например: your-username/nexus-api
+
+# ─── Jobs ──────────────────────────────────────────────────────────────────────
+jobs:
+
+  # ── 1. Сборка и публикация Docker-образа ──────────────────────────────────
+  build:
+    name: 🔨 Build & Push Docker Image
+    runs-on: ubuntu-latest
+
+    # Разрешаем запись в GitHub Container Registry
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tags }}
+
+    steps:
+      - name: ⬇️ Checkout репозитория
+        uses: actions/checkout@v4
+
+      - name: 🐳 Настройка Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🔑 Авторизация в GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🏷️ Извлечение метаданных (тегов и меток)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: 🏗️ Сборка и публикация образа
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ── 2. Деплой на сервер по SSH ────────────────────────────────────────────
+  deploy:
+    name: 🌐 Deploy to Server
+    runs-on: ubuntu-latest
+    needs: build                          # запускается только после успешного build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: 🚀 Деплой через SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host:     ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key:      ${{ secrets.SSH_KEY }}
+          port:     ${{ secrets.SSH_PORT }}
+          script: |
+            set -e
+
+            IMAGE="ghcr.io/${{ github.repository }}:latest"
+
+            echo "🔑 Логин в GitHub Container Registry..."
+            echo "${{ secrets.GITHUB_TOKEN }}" | \
+              docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+            echo "🛑 Остановка старого контейнера (если есть)..."
+            docker stop nexus-api 2>/dev/null || true
+            docker rm   nexus-api 2>/dev/null || true
+
+            echo "🗑️ Удаление старого образа..."
+            docker rmi  $IMAGE    2>/dev/null || true
+
+            echo "⬇️ Скачивание нового образа..."
+            docker pull $IMAGE
+
+            echo "▶️ Запуск контейнера..."
+            docker run -d \
+              --name nexus-api \
+              --restart unless-stopped \
+              -p 8000:8000 \
+              $IMAGE
+
+            echo "✅ Деплой завершён! NexusAPI запущена на порту 8000."
