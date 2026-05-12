@@ -33,7 +33,21 @@
 | POST | `/tools/hash` | Хеш строки (sha256/md5/sha512) |
 | GET | `/tools/uuid?count=1` | Генерация UUID v4 |
 
----
+## 📸 Screenshots
+
+### ✅ CI/CD Pipeline — оба job'а успешны
+![Actions](screenshots/actions.png)
+
+### 📦 GitHub Container Registry — образ опубликован
+![Registry](screenshots/registry.png)
+
+### 📡 Swagger UI — документация API
+![Swagger](screenshots/swagger.png)
+
+### 🕐 Запрос /datetime — время по часовому поясу
+![Datetime](screenshots/datetime.png)
+
+
 
 ## ⚡ Быстрый старт
 
