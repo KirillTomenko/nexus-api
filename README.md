@@ -53,7 +53,7 @@
 
 ```bash
 # Клонировать
-git clone https://github.com/YOUR_USERNAME/nexus-api.git
+git clone https://github.com/KirillTomenko/nexus-api.git
 cd nexus-api
 
 # Установить зависимости
