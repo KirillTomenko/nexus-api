@@ -2,7 +2,7 @@
 
 > Портфельный REST API-сервис на FastAPI с полным CI/CD-пайплайном через GitHub Actions.
 
-[![Build & Deploy](https://github.com/YOUR_USERNAME/nexus-api/actions/workflows/deploy.yml/badge.svg)](https://github.com/YOUR_USERNAME/nexus-api/actions/workflows/deploy.yml)
+[![Build & Deploy](https://github.com/KirillTomenko/nexus-api/actions/workflows/deploy.yml/badge.svg)](https://github.com/KirillTomenko/nexus-api/actions/workflows/deploy.yml)
 ![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-green?logo=fastapi)
 ![Docker](https://img.shields.io/badge/Docker-ready-blue?logo=docker)
