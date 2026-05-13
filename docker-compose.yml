@@ -1,0 +1,54 @@
+version: "3.8"
+
+services:
+
+  # ── Наше FastAPI-приложение ───────────────────────────────────────────────
+  nexus-api:
+    build: .
+    container_name: nexus-api
+    ports:
+      - "8000:8000"
+    environment:
+      - LOKI_URL=http://loki:3100
+    depends_on:
+      - loki
+    networks:
+      - monitoring
+
+  # ── Loki — хранилище логов ────────────────────────────────────────────────
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./loki-config.yaml:/etc/loki/local-config.yaml
+      - loki_data:/loki
+    networks:
+      - monitoring
+
+  # ── Grafana — визуализация ────────────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - loki
+    networks:
+      - monitoring
+
+volumes:
+  loki_data:
+  grafana_data:
+
+networks:
+  monitoring:
+    driver: bridge

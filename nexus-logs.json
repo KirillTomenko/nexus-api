@@ -1,0 +1,60 @@
+{
+  "title": "NexusAPI Logs",
+  "uid": "nexus-logs",
+  "version": 1,
+  "schemaVersion": 36,
+  "refresh": "10s",
+  "time": { "from": "now-1h", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "📋 Последние логи",
+      "type": "logs",
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 10 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "expr": "{app=\"nexus-api\"}",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "showTime": true,
+        "showLabels": true,
+        "sortOrder": "Descending"
+      }
+    },
+    {
+      "id": 2,
+      "title": "🥧 Распределение по уровню логов",
+      "type": "piechart",
+      "gridPos": { "x": 0, "y": 10, "w": 12, "h": 8 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "expr": "sum by (level) (count_over_time({app=\"nexus-api\"}[$__interval]))",
+          "refId": "A",
+          "legendFormat": "{{level}}"
+        }
+      ],
+      "options": {
+        "pieType": "pie",
+        "displayLabels": ["name", "percent"]
+      }
+    },
+    {
+      "id": 3,
+      "title": "📊 Количество логов по времени",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 10, "w": 12, "h": 8 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "expr": "sum(count_over_time({app=\"nexus-api\"}[$__interval]))",
+          "refId": "A",
+          "legendFormat": "Логи/мин"
+        }
+      ]
+    }
+  ]
+}
