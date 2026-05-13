@@ -94,9 +94,9 @@ jobs:
               docker login ghcr.io -u "${{ github.actor }}" --password-stdin
 
             echo "🛑 Останавливаем старый стек..."
-            docker compose down 2>/dev/null || true
+            docker-compose down 2>/dev/null || true
 
             echo "▶️ Запускаем новый стек..."
-            docker compose up -d --pull always
+            docker-compose up -d --pull always
 
             echo "✅ Готово! Grafana: порт 3000, API: порт 8000"
